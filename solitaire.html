@@ -1,105 +1,105 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Solitaire</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Solitaire</title>
 
-  <style>
-    :root{--green:#2b6b3a;--card-w:90px;--card-h:130px}
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    body{background:linear-gradient(180deg,#0b6623,#134a2b);display:flex;align-items:flex-start;justify-content:center;padding:20px}
+<style>
+:root{--green:#2b6b3a;--card-w:90px;--card-h:130px}
+html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+body{background:linear-gradient(180deg,#0b6623,#134a2b);display:flex;align-items:flex-start;justify-content:center;padding:20px}
 
-    .game{width:1100px;max-width:98%;}
-    header{color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    h1{font-size:18px;margin:0}
+.game{width:1100px;max-width:98%;}
+header{color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+h1{font-size:18px;margin:0}
 
-    .controls{display:flex;align-items:center}
-    .controls button,.nav-btn{
-      margin-left:8px;
-      padding:8px 12px;
-      border-radius:8px;
-      border:none;
-      background:#fff;
-      color:#111;
-      cursor:pointer;
-      font-weight:600;
-      text-decoration:none;
-    }
+.controls{display:flex;align-items:center}
+.controls button,.nav-btn{
+  margin-left:8px;
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  background:#fff;
+  color:#111;
+  cursor:pointer;
+  font-weight:600;
+  text-decoration:none;
+}
 
-    .nav-btn:hover,.controls button:hover{background:#e6e6e6}
+.nav-btn:hover,.controls button:hover{background:#e6e6e6}
 
-    .board{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
-    .top-row{display:flex;gap:12px;margin-bottom:12px}
-    .slot{width:var(--card-w);height:var(--card-h);border-radius:8px;position:relative}
-    .pile{min-height:var(--card-h)}
+.board{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+.top-row{display:flex;gap:12px;margin-bottom:12px}
+.slot{width:var(--card-w);height:var(--card-h);border-radius:8px;position:relative}
+.pile{min-height:var(--card-h)}
 
-    .card{
-      width:var(--card-w);height:var(--card-h);border-radius:8px;
-      box-shadow:0 6px 14px rgba(0,0,0,0.45);
-      position:absolute;left:0;top:0;user-select:none;
-      display:flex;flex-direction:column;justify-content:space-between;
-      padding:6px;font-weight:700;touch-action:none
-    }
+.card{
+  width:var(--card-w);height:var(--card-h);border-radius:8px;
+  box-shadow:0 6px 14px rgba(0,0,0,0.45);
+  position:absolute;left:0;top:0;user-select:none;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:6px;font-weight:700;touch-action:none
+}
 
-    .card.back{background:linear-gradient(180deg,#2f7f4a,#1b5b2f);color:transparent}
-    .card.front{background:#fff;color:#111}
-    .card.red{color:#d33}
-    .card .corner{font-size:12px}
-    .pile .card{position:relative}
-    .tableau{background:transparent;position:relative;padding-bottom:10px;min-height:var(--card-h)}
-    .tableau > .card{position:absolute;left:0}
+.card.back{background:linear-gradient(180deg,#2f7f4a,#1b5b2f);color:transparent}
+.card.front{background:#fff;color:#111}
+.card.red{color:#d33}
+.card .corner{font-size:12px}
+.pile .card{position:relative}
+.tableau{background:transparent;position:relative;padding-bottom:10px;min-height:var(--card-h)}
+.tableau > .card{position:absolute;left:0}
 
-    .foundations{display:flex;gap:12px;margin-left:auto}
-    .foundations .slot{
-      background:rgba(255,255,255,0.06);
-      display:flex;align-items:center;justify-content:center;
-      border:1px dashed rgba(255,255,255,0.08)
-    }
+.foundations{display:flex;gap:12px;margin-left:auto}
+.foundations .slot{
+  background:rgba(255,255,255,0.06);
+  display:flex;align-items:center;justify-content:center;
+  border:1px dashed rgba(255,255,255,0.08)
+}
 
-    .stock{cursor:pointer}
-    .drag-layer{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999}
-    .drag-item{position:absolute;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-    .valid-target{outline:3px solid rgba(50,200,50,0.7)}
-    .invalid-target{outline:3px solid rgba(200,50,50,0.7)}
+.stock{cursor:pointer}
+.drag-layer{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+.drag-item{position:absolute;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.valid-target{outline:3px solid rgba(50,200,50,0.7)}
+.invalid-target{outline:3px solid rgba(200,50,50,0.7)}
 
-    @media (max-width:720px){:root{--card-w:66px;--card-h:96px}}
-  </style>
+@media (max-width:720px){:root{--card-w:66px;--card-h:96px}}
+</style>
 </head>
 
 <body>
-  <div class="game">
+<div class="game">
 
-    <header>
-      <h1>Solitaire (Klondike)</h1>
-      <div class="controls">
-        <a href="index.html" class="nav-btn">← Main Menu</a>
-        <button id="newBtn">New Game</button>
-        <button id="undoBtn">Undo</button>
-        <button id="autoBtn">Auto-Finish</button>
-      </div>
-    </header>
+  <header>
+    <h1>Solitaire (Klondike)</h1>
+    <div class="controls">
+      <a href="index.html" class="nav-btn">← Main Menu</a>
+      <button id="newBtn">New Game</button>
+      <button id="undoBtn">Undo</button>
+      <button id="autoBtn">Auto-Finish</button>
+    </div>
+  </header>
 
-    <section class="top-row">
-      <div style="display:flex;gap:12px">
-        <div id="stock" class="slot stock"></div>
-        <div id="waste" class="slot"></div>
-      </div>
+  <section class="top-row">
+    <div style="display:flex;gap:12px">
+      <div id="stock" class="slot stock"></div>
+      <div id="waste" class="slot"></div>
+    </div>
 
-      <div style="flex:1"></div>
+    <div style="flex:1"></div>
 
-      <div class="foundations" id="foundations">
-        <div class="slot" data-suit="hearts"></div>
-        <div class="slot" data-suit="diamonds"></div>
-        <div class="slot" data-suit="clubs"></div>
-        <div class="slot" data-suit="spades"></div>
-      </div>
-    </section>
+    <div class="foundations" id="foundations">
+      <div class="slot" data-suit="hearts"></div>
+      <div class="slot" data-suit="diamonds"></div>
+      <div class="slot" data-suit="clubs"></div>
+      <div class="slot" data-suit="spades"></div>
+    </div>
+  </section>
 
-    <section class="board" id="tableau"></section>
-  </div>
+  <section class="board" id="tableau"></section>
+</div>
 
-  <div class="drag-layer" id="dragLayer"></div>
+<div class="drag-layer" id="dragLayer"></div>
 
 <script>
 const suits=['hearts','diamonds','clubs','spades']
@@ -110,6 +110,7 @@ const stockEl=document.getElementById('stock')
 const wasteEl=document.getElementById('waste')
 const foundationsEl=document.getElementById('foundations')
 const tableauEl=document.getElementById('tableau')
+const dragLayer=document.getElementById('dragLayer')
 
 function createDeck(){let d=[],id=0;for(let s of suits)for(let r of ranks)d.push({suit:s,rank:r,faceUp:false,id:id++});return d}
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
@@ -157,6 +158,9 @@ function render(){
     pile.forEach((c,j)=>{
       let el=cardEl(c)
       el.style.top=(j*28)+'px'
+      el.dataset.index=j
+      el.dataset.pile=i
+      el.onmousedown=startDrag
       p.appendChild(el)
     })
     tableauEl.appendChild(p)
@@ -171,11 +175,13 @@ function cardEl(card){
     if(card.suit==='hearts'||card.suit==='diamonds')el.classList.add('red')
     el.innerHTML=`<div class="corner">${rank(card.rank)} ${sym}</div><div style="font-size:22px;align-self:flex-end">${sym}</div>`
   }
+  el.dataset.id=card.id
   return el
 }
 
 function rank(r){return({1:'A',11:'J',12:'Q',13:'K'})[r]||r}
 
+// Stock click
 stockEl.onclick=()=>{
   if(stock.length){
     let c=stock.pop();c.faceUp=true;waste.push(c)
@@ -184,6 +190,65 @@ stockEl.onclick=()=>{
     waste=[]
   }
   render()
+}
+
+// Drag-and-drop
+let dragData=null
+
+function startDrag(e){
+  if(e.button!==0)return
+  let id=parseInt(this.dataset.id)
+  let pile=parseInt(this.dataset.pile)
+  let index=parseInt(this.dataset.index)
+  let cardsToDrag=table[pile].slice(index)
+
+  dragData={cards:cardsToDrag,pile:pile,offsetX:e.offsetX,offsetY:e.offsetY,el:null}
+  let dragEl=document.createElement('div')
+  dragEl.className='drag-item'
+  dragLayer.appendChild(dragEl)
+  dragData.el=dragEl
+
+  cardsToDrag.forEach((c,i)=>{
+    let ce=cardEl(c)
+    ce.style.top=(i*28)+'px'
+    dragEl.appendChild(ce)
+  })
+
+  table[pile]=table[pile].slice(0,index)
+  render()
+  moveDrag(e)
+  window.addEventListener('mousemove',moveDrag)
+  window.addEventListener('mouseup',endDrag)
+}
+
+function moveDrag(e){
+  if(!dragData)return
+  dragData.el.style.left=(e.clientX - dragData.offsetX)+'px'
+  dragData.el.style.top=(e.clientY - dragData.offsetY)+'px'
+}
+
+function endDrag(e){
+  if(!dragData)return
+  let dropPile=null
+  let closest=null
+  tableauEl.querySelectorAll('.tableau').forEach(p=>{
+    let rect=p.getBoundingClientRect()
+    if(e.clientX>rect.left && e.clientX<rect.right && e.clientY>rect.top && e.clientY<rect.bottom){
+      closest=p
+    }
+  })
+  if(closest){
+    dropPile=parseInt(closest.dataset.pile)
+    table[dropPile].push(...dragData.cards)
+  }else{
+    // Drop outside → return to original pile
+    table[dragData.pile].push(...dragData.cards)
+  }
+  dragData.el.remove()
+  dragData=null
+  render()
+  window.removeEventListener('mousemove',moveDrag)
+  window.removeEventListener('mouseup',endDrag)
 }
 
 document.getElementById('newBtn').onclick=startGame
