@@ -160,7 +160,7 @@ function render(){
       el.style.top=(j*28)+'px'
       el.dataset.index=j
       el.dataset.pile=i
-      el.onmousedown=startDrag
+      if(c.faceUp) el.onmousedown=startDrag
       p.appendChild(el)
     })
     tableauEl.appendChild(p)
@@ -176,6 +176,9 @@ function cardEl(card){
     el.innerHTML=`<div class="corner">${rank(card.rank)} ${sym}</div><div style="font-size:22px;align-self:flex-end">${sym}</div>`
   }
   el.dataset.id=card.id
+  el.dataset.suit=card.suit
+  el.dataset.rank=card.rank
+  el.dataset.color=(card.suit==='hearts'||card.suit==='diamonds')?'red':'black'
   return el
 }
 
@@ -192,17 +195,16 @@ stockEl.onclick=()=>{
   render()
 }
 
-// Drag-and-drop
+// Drag-and-drop with rules
 let dragData=null
 
 function startDrag(e){
   if(e.button!==0)return
-  let id=parseInt(this.dataset.id)
   let pile=parseInt(this.dataset.pile)
   let index=parseInt(this.dataset.index)
   let cardsToDrag=table[pile].slice(index)
-
   dragData={cards:cardsToDrag,pile:pile,offsetX:e.offsetX,offsetY:e.offsetY,el:null}
+
   let dragEl=document.createElement('div')
   dragEl.className='drag-item'
   dragLayer.appendChild(dragEl)
@@ -227,33 +229,49 @@ function moveDrag(e){
   dragData.el.style.top=(e.clientY - dragData.offsetY)+'px'
 }
 
+function isValidTableauMove(cards, destPile){
+  if(cards.length===0)return false
+  let top=table[destPile][table[destPile].length-1]
+  let first=cards[0]
+  if(!top) return first.rank===13 // King can be placed on empty pile
+  return top.faceUp &&
+         top.rank === first.rank + 1 &&
+         top.color !== first.color
+}
+
+function isValidFoundationMove(card, suit){
+  let f=foundations[suit]
+  if(!f.length) return card.rank===1
+  let top=f[f.length-1]
+  return card.suit===top.suit && card.rank === top.rank+1
+}
+
 function endDrag(e){
   if(!dragData)return
   let dropPile=null
-  let closest=null
-  tableauEl.querySelectorAll('.tableau').forEach(p=>{
-    let rect=p.getBoundingClientRect()
+  let tableauRects = Array.from(tableauEl.children).map(p=>p.getBoundingClientRect())
+  let destPile=null
+  tableauRects.forEach((rect,p)=>{
     if(e.clientX>rect.left && e.clientX<rect.right && e.clientY>rect.top && e.clientY<rect.bottom){
-      closest=p
+      if(isValidTableauMove(dragData.cards,p)) destPile=p
     }
   })
-  if(closest){
-    dropPile=parseInt(closest.dataset.pile)
-    table[dropPile].push(...dragData.cards)
-  }else{
-    // Drop outside → return to original pile
+
+  if(destPile!=null){
+    table[destPile].push(...dragData.cards)
+  } else {
+    // Return to original pile
     table[dragData.pile].push(...dragData.cards)
   }
+
   dragData.el.remove()
   dragData=null
   render()
-  window.removeEventListener('mousemove',moveDrag)
-  window.removeEventListener('mouseup',endDrag)
 }
 
 document.getElementById('newBtn').onclick=startGame
-document.getElementById('undoBtn').onclick=()=>alert("Undo not enabled in this trimmed version")
-document.getElementById('autoBtn').onclick=()=>alert("Auto-finish not enabled in this trimmed version")
+document.getElementById('undoBtn').onclick=()=>alert("Undo not enabled in this version")
+document.getElementById('autoBtn').onclick=()=>alert("Auto-finish not enabled in this version")
 
 startGame()
 </script>
