@@ -199,9 +199,7 @@ function startDrag(e){
     ce.style.top=(i*28)+'px'
     dragEl.appendChild(ce)
   })
-  table[pile]=table[pile].slice(0,index)
-  render()
-  moveDrag(e)
+
   window.addEventListener('mousemove',moveDrag)
   window.addEventListener('mouseup',endDrag)
 }
@@ -211,34 +209,33 @@ function moveDrag(e){
   dragData.el.style.left=(e.clientX - dragData.offsetX)+'px'
   dragData.el.style.top=(e.clientY - dragData.offsetY)+'px'
 
-  // Highlight valid tableau targets only
-  document.querySelectorAll('.tableau').forEach(p=>{
-    p.classList.remove('valid-target')
-    let pile=parseInt(p.dataset.pile)
-    if(isValidTableauMove(dragData.cards,pile)) p.classList.add('valid-target')
-  })
-}
+  // Clear previous highlights
+  document.querySelectorAll('.tableau').forEach(p=>p.classList.remove('valid-target'))
 
-function isValidTableauMove(cards,destPile){
-  let first=cards[0]
-  let top=table[destPile][table[destPile].length-1]
-  if(!top) return first.rank===13
-  return top.faceUp && top.rank === first.rank+1 && top.color!==first.color
+  // Highlight valid tableau targets
+  document.querySelectorAll('.tableau').forEach(p=>{
+    let pile=parseInt(p.dataset.pile)
+    let topCard = table[pile][table[pile].length-1]
+    let first = dragData.cards[0]
+    let valid = (!topCard && first.rank===13) || (topCard && topCard.faceUp && topCard.rank===first.rank+1 && topCard.color!==first.color)
+    if(valid) p.classList.add('valid-target')
+  })
 }
 
 function endDrag(e){
   if(!dragData) return
   let dropped=false
-  document.querySelectorAll('.tableau').forEach(p=>p.classList.remove('valid-target'))
   // Drop on valid tableau pile
   document.querySelectorAll('.tableau').forEach(p=>{
+    p.classList.remove('valid-target')
     let rect=p.getBoundingClientRect()
     let pile=parseInt(p.dataset.pile)
-    if(e.clientX>rect.left && e.clientX<rect.right && e.clientY>rect.top && e.clientY<rect.bottom){
-      if(isValidTableauMove(dragData.cards,pile)){
-        table[pile].push(...dragData.cards)
-        dropped=true
-      }
+    let topCard = table[pile][table[pile].length-1]
+    let first = dragData.cards[0]
+    let valid = (!topCard && first.rank===13) || (topCard && topCard.faceUp && topCard.rank===first.rank+1 && topCard.color!==first.color)
+    if(valid && e.clientX>rect.left && e.clientX<rect.right && e.clientY>rect.top && e.clientY<rect.bottom){
+      table[pile].push(...dragData.cards)
+      dropped=true
     }
   })
   if(!dropped) table[dragData.pile].push(...dragData.cards)
