@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Solitaire</title>
-
 <style>
 :root{--green:#2b6b3a;--card-w:90px;--card-h:130px}
 html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
@@ -26,7 +25,6 @@ h1{font-size:18px;margin:0}
   font-weight:600;
   text-decoration:none;
 }
-
 .nav-btn:hover,.controls button:hover{background:#e6e6e6}
 
 .board{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
@@ -39,7 +37,7 @@ h1{font-size:18px;margin:0}
   box-shadow:0 6px 14px rgba(0,0,0,0.45);
   position:absolute;left:0;top:0;user-select:none;
   display:flex;flex-direction:column;justify-content:space-between;
-  padding:6px;font-weight:700;touch-action:none
+  padding:6px;font-weight:700;touch-action:none;
 }
 
 .card.back{background:linear-gradient(180deg,#2f7f4a,#1b5b2f);color:transparent}
@@ -60,8 +58,8 @@ h1{font-size:18px;margin:0}
 .stock{cursor:pointer}
 .drag-layer{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999}
 .drag-item{position:absolute;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-.valid-target{outline:3px solid rgba(50,200,50,0.7)}
-.invalid-target{outline:3px solid rgba(200,50,50,0.7)}
+.valid-target{outline:3px solid limegreen}
+.invalid-target{outline:3px solid red}
 
 @media (max-width:720px){:root{--card-w:66px;--card-h:96px}}
 </style>
@@ -69,7 +67,6 @@ h1{font-size:18px;margin:0}
 
 <body>
 <div class="game">
-
   <header>
     <h1>Solitaire (Klondike)</h1>
     <div class="controls">
@@ -104,7 +101,7 @@ h1{font-size:18px;margin:0}
 <script>
 const suits=['hearts','diamonds','clubs','spades']
 const ranks=[1,2,3,4,5,6,7,8,9,10,11,12,13]
-let deck=[],stock=[],waste=[],foundations={},table=[[],[],[],[],[],[],[]],history=[]
+let deck=[],stock=[],waste=[],foundations={},table=[[],[],[],[],[],[],[]]
 
 const stockEl=document.getElementById('stock')
 const wasteEl=document.getElementById('waste')
@@ -119,7 +116,7 @@ function startGame(){
   deck=createDeck();shuffle(deck)
   stock=[];waste=[]
   foundations={hearts:[],diamonds:[],clubs:[],spades:[]}
-  table=[[],[],[],[],[],[],[]];history=[]
+  table=[[],[],[],[],[],[],[]]
   let i=0
   for(let p=0;p<7;p++){
     for(let c=0;c<=p;c++){
@@ -137,18 +134,12 @@ function render(){
   foundationsEl.querySelectorAll('.slot').forEach(s=>s.innerHTML='')
   tableauEl.innerHTML=''
 
-  if(stock.length){
-    let b=document.createElement('div')
-    b.className='card back'
-    stockEl.appendChild(b)
-  }
-
-  if(waste.length)wasteEl.appendChild(cardEl(waste[waste.length-1]))
+  if(stock.length){ let b=document.createElement('div'); b.className='card back'; stockEl.appendChild(b) }
+  if(waste.length) wasteEl.appendChild(cardEl(waste[waste.length-1]))
 
   suits.forEach((s,i)=>{
     let slot=foundationsEl.children[i]
-    if(foundations[s].length)
-      slot.appendChild(cardEl(foundations[s][foundations[s].length-1]))
+    if(foundations[s].length) slot.appendChild(cardEl(foundations[s][foundations[s].length-1]))
   })
 
   table.forEach((pile,i)=>{
@@ -172,7 +163,7 @@ function cardEl(card){
   el.className='card '+(card.faceUp?'front':'back')
   if(card.faceUp){
     let sym={hearts:'♥',diamonds:'♦',clubs:'♣',spades:'♠'}[card.suit]
-    if(card.suit==='hearts'||card.suit==='diamonds')el.classList.add('red')
+    if(card.suit==='hearts'||card.suit==='diamonds') el.classList.add('red')
     el.innerHTML=`<div class="corner">${rank(card.rank)} ${sym}</div><div style="font-size:22px;align-self:flex-end">${sym}</div>`
   }
   el.dataset.id=card.id
@@ -184,38 +175,31 @@ function cardEl(card){
 
 function rank(r){return({1:'A',11:'J',12:'Q',13:'K'})[r]||r}
 
-// Stock click
 stockEl.onclick=()=>{
   if(stock.length){
-    let c=stock.pop();c.faceUp=true;waste.push(c)
-  }else{
-    stock=waste.reverse().map(c=>({...c,faceUp:false}))
-    waste=[]
-  }
+    let c=stock.pop(); c.faceUp=true; waste.push(c)
+  } else { stock=waste.reverse().map(c=>({...c,faceUp:false})); waste=[] }
   render()
 }
 
-// Drag-and-drop with rules
 let dragData=null
 
 function startDrag(e){
-  if(e.button!==0)return
+  if(e.button!==0) return
   let pile=parseInt(this.dataset.pile)
   let index=parseInt(this.dataset.index)
   let cardsToDrag=table[pile].slice(index)
-  dragData={cards:cardsToDrag,pile:pile,offsetX:e.offsetX,offsetY:e.offsetY,el:null}
 
+  dragData={cards:cardsToDrag,pile:pile,offsetX:e.offsetX,offsetY:e.offsetY,el:null}
   let dragEl=document.createElement('div')
   dragEl.className='drag-item'
   dragLayer.appendChild(dragEl)
   dragData.el=dragEl
-
   cardsToDrag.forEach((c,i)=>{
     let ce=cardEl(c)
     ce.style.top=(i*28)+'px'
     dragEl.appendChild(ce)
   })
-
   table[pile]=table[pile].slice(0,index)
   render()
   moveDrag(e)
@@ -224,55 +208,49 @@ function startDrag(e){
 }
 
 function moveDrag(e){
-  if(!dragData)return
+  if(!dragData) return
   dragData.el.style.left=(e.clientX - dragData.offsetX)+'px'
   dragData.el.style.top=(e.clientY - dragData.offsetY)+'px'
+
+  // Highlight valid targets
+  document.querySelectorAll('.tableau').forEach(p=>{
+    p.classList.remove('valid-target','invalid-target')
+    let pile=parseInt(p.dataset.pile)
+    if(isValidTableauMove(dragData.cards,pile)) p.classList.add('valid-target')
+    else p.classList.add('invalid-target')
+  })
 }
 
-function isValidTableauMove(cards, destPile){
-  if(cards.length===0)return false
-  let top=table[destPile][table[destPile].length-1]
+function isValidTableauMove(cards,destPile){
   let first=cards[0]
-  if(!top) return first.rank===13 // King can be placed on empty pile
-  return top.faceUp &&
-         top.rank === first.rank + 1 &&
-         top.color !== first.color
-}
-
-function isValidFoundationMove(card, suit){
-  let f=foundations[suit]
-  if(!f.length) return card.rank===1
-  let top=f[f.length-1]
-  return card.suit===top.suit && card.rank === top.rank+1
+  let top=table[destPile][table[destPile].length-1]
+  if(!top) return first.rank===13
+  return top.faceUp && top.rank === first.rank+1 && top.color!==first.color
 }
 
 function endDrag(e){
-  if(!dragData)return
-  let dropPile=null
-  let tableauRects = Array.from(tableauEl.children).map(p=>p.getBoundingClientRect())
-  let destPile=null
-  tableauRects.forEach((rect,p)=>{
+  if(!dragData) return
+  let dropped=false
+  document.querySelectorAll('.tableau').forEach(p=>{
+    p.classList.remove('valid-target','invalid-target')
+    let rect=p.getBoundingClientRect()
+    let pile=parseInt(p.dataset.pile)
     if(e.clientX>rect.left && e.clientX<rect.right && e.clientY>rect.top && e.clientY<rect.bottom){
-      if(isValidTableauMove(dragData.cards,p)) destPile=p
+      if(isValidTableauMove(dragData.cards,pile)){
+        table[pile].push(...dragData.cards)
+        dropped=true
+      }
     }
   })
-
-  if(destPile!=null){
-    table[destPile].push(...dragData.cards)
-  } else {
-    // Return to original pile
-    table[dragData.pile].push(...dragData.cards)
-  }
-
+  if(!dropped) table[dragData.pile].push(...dragData.cards)
   dragData.el.remove()
   dragData=null
   render()
 }
 
 document.getElementById('newBtn').onclick=startGame
-document.getElementById('undoBtn').onclick=()=>alert("Undo not enabled in this version")
-document.getElementById('autoBtn').onclick=()=>alert("Auto-finish not enabled in this version")
-
+document.getElementById('undoBtn').onclick=()=>alert("Undo not enabled")
+document.getElementById('autoBtn').onclick=()=>alert("Auto-finish not enabled")
 startGame()
 </script>
 </body>
