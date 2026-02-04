@@ -1,1 +1,1 @@
-<img width="160" height="160" alt="Solitaire Icon" src="images/solitaire.png" />
+<img width="512" height="512" alt="solitaire png" src="https://github.com/user-attachments/assets/f854b4e7-c9ef-40ba-beea-28e09f6b6935" />
