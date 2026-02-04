@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Plinko Money Game</title>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: sans-serif;
+    background: #222;
+    color: #fff;
+    margin: 0;
+  }
+
+  canvas {
+    background: #333;
+    margin-top: 20px;
+    border: 2px solid #fff;
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  /* Back button style */
+  .back-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- BACK TO MENU BUTTON -->
+<button class="back-btn" onclick="window.location.href='index.html'">
+  ⬅ Back to Menu
+</button>
+
+<h1>Plinko Money Game</h1>
+
+<canvas id="plinkoCanvas" width="400" height="500"></canvas>
+
+<button onclick="dropBall()">Drop Ball ($5)</button>
+
+<h2 id="money">Money: $50.00</h2>
+
+<script>
+const canvas = document.getElementById('plinkoCanvas');
+const ctx = canvas.getContext('2d');
+
+const gravity = 0.3;
+const friction = 0.7;
+const ballRadius = 8;
+const pegRadius = 5;
+
+let balls = [];
+let money = 50;
+const ballCost = 5;
+
+// PEGS (triangle)
+const pegs = [];
+const rows = 8;
+const spacingY = 50;
+
+for (let r = 0; r < rows; r++) {
+  for (let c = 0; c <= r; c++) {
+    const x = canvas.width / 2 - r * 20 + c * 40;
+    const y = spacingY + r * spacingY;
+    pegs.push({ x, y });
+  }
+}
+
+// BINS (center = highest multiplier)
+const numBins = rows + 1;
+const bins = [];
+
+for (let i = 0; i <= numBins; i++) {
+  const center = numBins / 2;
+  const distance = Math.abs(i - center);
+  const multiplier = Math.max(0.7, 1.6 - distance * 0.2);
+  bins.push({ multiplier });
+}
+
+function drawPegs() {
+  ctx.fillStyle = "#fff";
+  pegs.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, pegRadius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function drawBins() {
+  const binWidth = canvas.width / numBins;
+
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 2;
+
+  for (let i = 0; i <= numBins; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * binWidth, canvas.height - 50);
+    ctx.lineTo(i * binWidth, canvas.height);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "lime";
+  ctx.font = "14px sans-serif";
+  bins.forEach((b, i) => {
+    if (i < bins.length - 1) {
+      ctx.fillText(b.multiplier.toFixed(2) + "x", i * binWidth + 8, canvas.height - 55);
+    }
+  });
+}
+
+function drawBalls() {
+  ctx.fillStyle = "yellow";
+  balls.forEach(b => {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, ballRadius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function collideBall(ball, peg) {
+  const dx = ball.x - peg.x;
+  const dy = ball.y - peg.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  if (dist < ballRadius + pegRadius) {
+    const angle = Math.atan2(dy, dx);
+    ball.x = peg.x + Math.cos(angle) * (ballRadius + pegRadius);
+    ball.y = peg.y + Math.sin(angle) * (ballRadius + pegRadius);
+
+    const speed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
+    const bounce = angle + (Math.random() < 0.5 ? -Math.PI / 6 : Math.PI / 6);
+
+    ball.vx = Math.cos(bounce) * speed * friction;
+    ball.vy = Math.sin(bounce) * speed * friction;
+  }
+}
+
+function updateBalls() {
+  balls.forEach(ball => {
+    ball.vy += gravity;
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    pegs.forEach(p => collideBall(ball, p));
+
+    // Triangle walls
+    const left = canvas.width / 2 - (ball.y / spacingY) * 20 - ballRadius;
+    const right = canvas.width / 2 + (ball.y / spacingY) * 20 + ballRadius;
+
+    if (ball.x < left) { ball.x = left; ball.vx *= -friction; }
+    if (ball.x > right) { ball.x = right; ball.vx *= -friction; }
+
+    // Bottom (score)
+    if (ball.y > canvas.height - ballRadius) {
+      const binWidth = canvas.width / numBins;
+      const index = Math.floor(ball.x / binWidth);
+      const mult = bins[Math.min(index, bins.length - 1)].multiplier;
+
+      money += ballCost * mult;
+      document.getElementById("money").innerText = "Money: $" + money.toFixed(2);
+
+      balls = balls.filter(b => b !== ball);
+    }
+  });
+}
+
+function dropBall() {
+  if (money < ballCost) {
+    alert("Not enough money!");
+    return;
+  }
+
+  money -= ballCost;
+  document.getElementById("money").innerText = "Money: $" + money.toFixed(2);
+
+  balls.push({
+    x: canvas.width / 2,
+    y: 0,
+    vx: (Math.random() - 0.5) * 2,
+    vy: 0
+  });
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawPegs();
+  drawBins();
+  updateBalls();
+  drawBalls();
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
