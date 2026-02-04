@@ -39,7 +39,7 @@
       box-shadow:0 6px 14px rgba(0,0,0,0.45);
       position:absolute;left:0;top:0;user-select:none;
       display:flex;flex-direction:column;justify-content:space-between;
-      padding:6px;font-weight:700;touch-action:none
+      padding:6px;font-weight:700;touch-action:none;
     }
 
     .card.back{background:linear-gradient(180deg,#2f7f4a,#1b5b2f);color:transparent}
@@ -112,6 +112,7 @@ const foundationsEl=document.getElementById('foundations')
 const tableauEl=document.getElementById('tableau')
 const dragLayer=document.getElementById('dragLayer')
 
+// Create deck
 function createDeck(){let d=[],id=0;for(let s of suits)for(let r of ranks)d.push({suit:s,rank:r,faceUp:false,id:id++});return d}
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
 
@@ -173,59 +174,66 @@ function cardEl(card,pileIndex=null,cardIndex=null){
     el.innerHTML=`<div class="corner">${rank(card.rank)} ${sym}</div><div style="font-size:22px;align-self:flex-end">${sym}</div>`
   }
 
+  el.id = card.id
+
   // Make draggable
   if(card.faceUp && pileIndex !== null){
     el.onpointerdown = e => {
       e.preventDefault()
-      let startX=e.clientX,startY=e.clientY
-      let movingCards = table[pileIndex].slice(cardIndex) // grab the stack
-      movingCards.forEach(c=>{
-        let ce=document.querySelector(`.card[id='${c.id}']`)
-        if(ce) dragLayer.appendChild(ce)
+      const rect = el.getBoundingClientRect()
+      const offsetX = e.clientX - rect.left
+      const offsetY = e.clientY - rect.top
+      const movingCards = table[pileIndex].slice(cardIndex)
+      movingCards.forEach((c, i) => {
+        const ce = document.getElementById(c.id)
+        dragLayer.appendChild(ce)
+        ce.style.left = rect.left + 'px'
+        ce.style.top = (rect.top + i*28) + 'px'
       })
-      dragItem = {movingCards, startX, startY, pileIndex, cardIndex}
-      offsetX=e.clientX - el.getBoundingClientRect().left
-      offsetY=e.clientY - el.getBoundingClientRect().top
+      dragItem = {movingCards, pileIndex, cardIndex, offsetX, offsetY}
       document.onpointermove = dragMove
       document.onpointerup = dragEnd
     }
   }
 
-  el.id = card.id
   return el
 }
 
 function rank(r){return({1:'A',11:'J',12:'Q',13:'K'})[r]||r}
 
-// Drag logic
+// Drag functions
 let dragItem = null
 
 function dragMove(e){
   if(!dragItem) return
   dragItem.movingCards.forEach((c,i)=>{
-    let el=document.getElementById(c.id)
-    el.style.left=(e.clientX - offsetX)+'px'
-    el.style.top=(e.clientY - offsetY + i*28)+'px'
+    const el = document.getElementById(c.id)
+    el.style.left = (e.clientX - dragItem.offsetX) + 'px'
+    el.style.top = (e.clientY - dragItem.offsetY + i*28) + 'px'
   })
 }
 
 function dragEnd(e){
   if(!dragItem) return
-  let {movingCards,pileIndex,cardIndex} = dragItem
+  const {movingCards,pileIndex,cardIndex} = dragItem
   let dropped = false
+
   document.querySelectorAll('.tableau').forEach(pileEl=>{
-    let rect=pileEl.getBoundingClientRect()
-    if(e.clientX>rect.left && e.clientX<rect.right &&
-       e.clientY>rect.top && e.clientY<rect.bottom){
-      table[pileIndex].splice(cardIndex,movingCards.length) // remove from old
-      table[parseInt(pileEl.dataset.pile)].push(...movingCards) // add to new
+    const rect = pileEl.getBoundingClientRect()
+    if(e.clientX > rect.left && e.clientX < rect.right &&
+       e.clientY > rect.top && e.clientY < rect.bottom){
+      table[pileIndex].splice(cardIndex, movingCards.length)
+      table[parseInt(pileEl.dataset.pile)].push(...movingCards)
       dropped = true
     }
   })
+
+  // Snap back if invalid drop
   if(!dropped) table[pileIndex].splice(cardIndex,0,...movingCards)
-  dragItem=null
-  document.onpointermove=null
-  document.onpointerup=null
+
+  dragItem = null
+  document.onpointermove = null
+  document.onpointerup = null
   render()
 }
 
