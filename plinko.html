@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Plinko Money Game</title>
+<title>High Risk Plinko</title>
 
 <style>
   body {
     margin: 0;
+    font-family: sans-serif;
+    background: #1e1e1e;
+    color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: sans-serif;
-    background: #222;
-    color: #fff;
   }
 
   canvas {
-    background: #333;
+    background: #2a2a2a;
+    border: 2px solid white;
     margin-top: 20px;
-    border: 2px solid #fff;
   }
 
   button {
@@ -38,48 +38,49 @@
 
 <body>
 
-<!-- BACK BUTTON -->
 <button class="back-btn" onclick="window.location.href='index.html'">
   ⬅ Back to Menu
 </button>
 
-<h1>Plinko</h1>
+<h1>High Risk Plinko</h1>
 
-<canvas id="plinkoCanvas" width="420" height="520"></canvas>
+<canvas id="plinkoCanvas" width="600" height="750"></canvas>
 
-<button onclick="dropBall()">Drop Ball ($5)</button>
+<button onclick="dropBall()">Drop Ball ($10)</button>
 
-<h2 id="money">Money: $50.00</h2>
+<h2 id="money">Money: $100.00</h2>
 
 <script>
 const canvas = document.getElementById("plinkoCanvas");
 const ctx = canvas.getContext("2d");
 
-const gravity = 0.35;
-const friction = 0.65;
+/* ---------- PHYSICS ---------- */
+const gravity = 0.4;
+const friction = 0.6;
 
-const ballRadius = 8;
+const ballRadius = 7;
 const pegRadius = 5;
 
-const rows = 8;
-const spacingY = 55;
-
 let balls = [];
-let money = 50;
-const ballCost = 5;
+let money = 100;
+const ballCost = 10;
 
-/* ---------- PEGS (TRIANGLE) ---------- */
+/* ---------- BOARD SIZE ---------- */
+const rows = 14;              // MORE ROWS = MORE PINS
+const spacingY = 45;
+
+/* ---------- PEGS ---------- */
 const pegs = [];
 for (let r = 0; r < rows; r++) {
   for (let c = 0; c <= r; c++) {
     pegs.push({
       x: canvas.width / 2 - r * 22 + c * 44,
-      y: spacingY + r * spacingY
+      y: 60 + r * spacingY
     });
   }
 }
 
-/* ---------- BINS (OUTSIDE = HIGH MULTIPLIER) ---------- */
+/* ---------- BINS & MULTIPLIERS ---------- */
 const numBins = rows + 1;
 const bins = [];
 const center = (numBins - 1) / 2;
@@ -87,15 +88,18 @@ const center = (numBins - 1) / 2;
 for (let i = 0; i < numBins; i++) {
   const distance = Math.abs(i - center);
 
-  // Center ≈ 0.5x, edges ≈ 3.0x
-  const multiplier = 0.5 + distance * 0.5;
-
+  /*
+    VERY risky curve:
+    Center ≈ 0.2x
+    Edges ≈ 8x+
+  */
+  const multiplier = 0.2 + Math.pow(distance, 1.7) * 0.25;
   bins.push(multiplier);
 }
 
-/* ---------- DRAWING ---------- */
+/* ---------- DRAW ---------- */
 function drawPegs() {
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "white";
   pegs.forEach(p => {
     ctx.beginPath();
     ctx.arc(p.x, p.y, pegRadius, 0, Math.PI * 2);
@@ -106,21 +110,25 @@ function drawPegs() {
 function drawBins() {
   const binWidth = canvas.width / numBins;
 
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "white";
   ctx.lineWidth = 2;
 
   for (let i = 0; i <= numBins; i++) {
     ctx.beginPath();
-    ctx.moveTo(i * binWidth, canvas.height - 60);
+    ctx.moveTo(i * binWidth, canvas.height - 70);
     ctx.lineTo(i * binWidth, canvas.height);
     ctx.stroke();
   }
 
   ctx.font = "14px sans-serif";
-  ctx.fillStyle = "lime";
-
   bins.forEach((m, i) => {
-    ctx.fillText(m.toFixed(2) + "x", i * binWidth + 10, canvas.height - 65);
+    const color =
+      m > 5 ? "red" :
+      m > 2 ? "orange" :
+      "lime";
+
+    ctx.fillStyle = color;
+    ctx.fillText(m.toFixed(2) + "x", i * binWidth + 8, canvas.height - 75);
   });
 }
 
@@ -133,7 +141,7 @@ function drawBalls() {
   });
 }
 
-/* ---------- PHYSICS ---------- */
+/* ---------- COLLISIONS ---------- */
 function collideBall(ball, peg) {
   const dx = ball.x - peg.x;
   const dy = ball.y - peg.y;
@@ -146,13 +154,14 @@ function collideBall(ball, peg) {
     ball.y = peg.y + Math.sin(angle) * (ballRadius + pegRadius);
 
     const speed = Math.hypot(ball.vx, ball.vy);
-    const bounce = angle + (Math.random() < 0.5 ? -0.5 : 0.5);
+    const bounce = angle + (Math.random() < 0.5 ? -0.45 : 0.45);
 
     ball.vx = Math.cos(bounce) * speed * friction;
     ball.vy = Math.sin(bounce) * speed * friction;
   }
 }
 
+/* ---------- UPDATE ---------- */
 function updateBalls() {
   balls.forEach(ball => {
     ball.vy += gravity;
@@ -168,13 +177,14 @@ function updateBalls() {
     if (ball.x < left) { ball.x = left; ball.vx *= -friction; }
     if (ball.x > right) { ball.x = right; ball.vx *= -friction; }
 
-    // Bottom → payout
+    // Bottom payout
     if (ball.y > canvas.height - ballRadius) {
       const binWidth = canvas.width / numBins;
       const index = Math.min(Math.floor(ball.x / binWidth), bins.length - 1);
-      const payout = ballCost * bins[index];
 
+      const payout = ballCost * bins[index];
       money += payout;
+
       document.getElementById("money").innerText =
         "Money: $" + money.toFixed(2);
 
@@ -183,7 +193,7 @@ function updateBalls() {
   });
 }
 
-/* ---------- GAME LOOP ---------- */
+/* ---------- CONTROLS ---------- */
 function dropBall() {
   if (money < ballCost) {
     alert("Not enough money!");
@@ -197,11 +207,12 @@ function dropBall() {
   balls.push({
     x: canvas.width / 2,
     y: 0,
-    vx: (Math.random() - 0.5) * 2,
+    vx: (Math.random() - 0.5) * 2.5,
     vy: 0
   });
 }
 
+/* ---------- LOOP ---------- */
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawPegs();
