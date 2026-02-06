@@ -81,12 +81,19 @@ for (let r = 0; r < rows; r++) {
 }
 
 /* ---------- BINS & MULTIPLIERS ---------- */
-const numBins = rows + 1;
-const bins = [];
-const center = (numBins - 1) / 2;
+const binWidth = canvas.width / numBins;
 
-for (let i = 0; i < numBins; i++) {
-  const distance = Math.abs(i - center);
+let index = Math.floor(ball.x / binWidth);
+
+// CLAMP index so it never breaks
+index = Math.max(0, Math.min(index, bins.length - 1));
+
+const multiplier = bins[index];
+
+if (Number.isFinite(multiplier)) {
+  money += ballCost * multiplier;
+}
+
 
   /*
     VERY risky curve:
