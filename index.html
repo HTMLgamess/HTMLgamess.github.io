@@ -1,144 +1,190 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@main/buckshot-roulette/">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-    <title>Buckshot Roulette</title>
-    <link rel="stylesheet" href="style.css">
-    <link id="-gd-engine-icon" rel="icon" type="image/png" href="buckshot-roulette.icon.png" />
-    <link rel="apple-touch-icon" href="buckshot-roulette.apple-touch-icon.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Hub</title>
+
+  <style>
+    :root{
+      --green:#2b6b3a;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
+    }
+
+  body{
+  min-height:100vh;
+  background: linear-gradient(180deg,#0b6623,#134a2b);
+  background-attachment: fixed;
+  padding:30px;
+  color:#fff;
+}
+
+    .hub{
+      width:1000px;
+      max-width:100%;
+    }
+
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:30px;
+    }
+
+    h1{
+      font-size:22px;
+      margin:0;
+    }
+
+    .subtitle{
+      opacity:0.85;
+      font-size:14px;
+    }
+
+    .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:24px;
+  }
+
+    .game-card{
+      background:rgba(255,255,255,0.08);
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+
+    .game-card:hover{
+      transform:translateY(-6px);
+      box-shadow:0 18px 40px rgba(0,0,0,0.45);
+    }
+
+    .game-link{
+      text-decoration:none;
+      color:inherit;
+      display:block;
+    }
+
+    .icon-box{
+      width:100%;
+      height:160px;
+      background:rgba(0,0,0,0.25);
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:16px;
+      overflow:hidden;
+    }
+
+    .icon-box img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .game-title{
+      font-size:18px;
+      margin:10px 0 6px;
+    }
+
+    .game-desc{
+      font-size:14px;
+      opacity:0.85;
+      margin-bottom:14px;
+    }
+
+    .play-btn{
+      display:inline-block;
+      padding:10px 16px;
+      border-radius:10px;
+      background:#fff;
+      color:#111;
+      font-weight:600;
+      text-decoration:none;
+      transition:background .15s ease;
+    }
+
+    .play-btn:hover{
+      background:#e6e6e6;
+    }
+
+    footer{
+      margin-top:30px;
+      opacity:0.8;
+      font-size:13px;
+      text-align:center;
+    }
+  </style>
 </head>
 
 <body>
-    <script src="main.js"></script>
-    <div id="loading-text" style="color: white; font-family: cursive; font-size: 48px; text-align: center; margin-top: 20px;">LOADING...</div>
-    <canvas id="canvas"> Your browser does not support the canvas tag. </canvas>
-    <noscript> Your browser does not support JavaScript. </noscript>
-    <div id="status">
-        <img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="buckshot-roulette.png" alt="">
-        <progress id="status-progress"></progress>
-        <div id="status-notice"></div>
-    </div>
-    <script src="buckshot-roulette.js"></script>
-    <script>
-        const GODOT_CONFIG = {
-            "args": [],
-            "canvasResizePolicy": 2,
-            "ensureCrossOriginIsolationHeaders": false,
-            "executable": "buckshot-roulette",
-            "experimentalVK": false,
-            "fileSizes": {
-                "buckshot-roulette.pck": 344705792,
-                "buckshot-roulette.wasm": 43444261
-            },
-            "focusCanvas": false,
-            "gdextensionLibs": []
-        };
-        const GODOT_THREADS_ENABLED = false;
-        const engine = new Engine(GODOT_CONFIG);
+  <div class="hub">
 
-        function run() {
-            const loadingText = document.getElementById('loading-text');
-            const statusOverlay = document.getElementById('status');
-            const statusProgress = document.getElementById('status-progress');
-            const statusNotice = document.getElementById('status-notice');
-            loadingText.remove();
-            let initializing = true;
-            let statusMode = '';
+    <header>
+      <div>
+        <h1>🎮 Game Hub</h1>
+        <div class="subtitle">Choose a game</div>
+      </div>
+    </header>
 
-            function setStatusMode(mode) {
-                if (statusMode === mode || !initializing) {
-                    return;
-                }
-                if (mode === 'hidden') {
-                    statusOverlay.remove();
-                    initializing = false;
-                    return;
-                }
-                statusOverlay.style.visibility = 'visible';
-                statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-                statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-                statusMode = mode;
-            }
+    <section class="grid">
 
-            function setStatusNotice(text) {
-                while (statusNotice.lastChild) {
-                    statusNotice.removeChild(statusNotice.lastChild);
-                }
-                const lines = text.split('\n');
-                lines.forEach((line) => {
-                    statusNotice.appendChild(document.createTextNode(line));
-                    statusNotice.appendChild(document.createElement('br'));
-                });
-            }
+      <!-- SOLITAIRE -->
+      <div class="game-card">
+        <a href="solitaire.html" class="game-link">
+          <div class="icon-box">
+            <img src="https://github.com/user-attachments/assets/f854b4e7-c9ef-40ba-beea-28e09f6b6935" alt="Solitaire Icon">
+          </div>
 
-            function displayFailureNotice(err) {
-                console.error(err);
-                if (err instanceof Error) {
-                    setStatusNotice(err.message);
-                } else if (typeof err === 'string') {
-                    setStatusNotice(err);
-                } else {
-                    setStatusNotice('An unknown error occurred.');
-                }
-                setStatusMode('notice');
-                initializing = false;
-            }
-            const missing = Engine.getMissingFeatures({
-                threads: GODOT_THREADS_ENABLED,
-            });
-            if (missing.length !== 0) {
-                if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-                    let serviceWorkerRegistrationPromise;
-                    try {
-                        serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-                    } catch (err) {
-                        serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-                    }
-                    // There's a chance that installing the service worker would fix the issue
-                    Promise.race([
-                        serviceWorkerRegistrationPromise.then((registration) => {
-                            if (registration != null) {
-                                return Promise.reject(new Error('Service worker already exists.'));
-                            }
-                            return registration;
-                        }).then(() => engine.installServiceWorker()),
-                        // For some reason, `getRegistration()` can stall
-                        new Promise((resolve) => {
-                            setTimeout(() => resolve(), 2000);
-                        }),
-                    ]).then(() => {
-                        // Reload if there was no error.
-                        window.location.reload();
-                    }).catch((err) => {
-                        console.error('Error while registering service worker:', err);
-                    });
-                } else {
-                    // Display the message as usual
-                    const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-                    displayFailureNotice(missingMsg + missing.join('\n'));
-                }
-            } else {
-                setStatusMode('progress');
-                engine.startGame({
-                    'onProgress': function (current, total) {
-                        if (current > 0 && total > 0) {
-                            statusProgress.value = current;
-                            statusProgress.max = total;
-                        } else {
-                            statusProgress.removeAttribute('value');
-                            statusProgress.removeAttribute('max');
-                        }
-                    },
-                }).then(() => {
-                    setStatusMode('hidden');
-                }, displayFailureNotice);
-            }
-        };
-        window.godotRunStart = run;
-    </script>
+          <div class="game-title">Solitaire</div>
+          <div class="game-desc">Classic Klondike solitaire</div>
+
+          <div class="play-btn">Play</div>
+        </a>
+      </div>
+
+      <!-- PLINKO -->
+      <div class="game-card">
+        <a href="plinko.html" class="game-link">
+          <div class="icon-box">
+            <!-- Replace with a Plinko image if you want -->
+            <span style="opacity:0.5;font-size:14px;">Add Image</span>
+          </div>
+
+          <div class="game-title">Plinko</div>
+          <div class="game-desc">Drop the ball and test your luck</div>
+
+          <div class="play-btn">Play</div>
+        </a>
+      </div>
+<!-- Five nights at epstiens -->
+      <div class="game-card">
+        <a href="epstien.html" class="game-link">
+          <div class="icon-box">
+            <!-- Replace with a epstien image if you want -->
+            <span style="opacity:0.5;font-size:14px;">Add Image</span>
+          </div>
+
+          <div class="game-title">Five Nights at Epstiens</div>
+          <div class="game-desc">Survive Epstien</div>
+
+          <div class="play-btn">Play</div>
+        </a>
+      </div>
+
+    </section>
+
+    <footer>
+      Built with HTML • Hosted on GitHub Pages
+    </footer>
+
+  </div>
 </body>
-
 </html>
